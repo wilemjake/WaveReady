@@ -36,6 +36,26 @@ export interface HeatStressData {
   history?: any[];
 }
 
+export interface RainForecastDay {
+  id?: number;
+  date: string;
+  forecast: string;
+  forecast_summary: string;
+  forecast_code?: string;
+  temperature_low: number;
+  temperature_high: number;
+  humidity_low: number;
+  humidity_high: number;
+  wind_direction: string;
+  wind_speed_low: number;
+  wind_speed_high: number;
+  day_name: string;
+}
+
+export interface RainForecastData {
+  forecasts: RainForecastDay[];
+}
+
 export interface WindStationItem {
   id: string;
   deviceId?: string;
@@ -77,6 +97,8 @@ export interface WindDataGovResponse {
   }>;
 }
 
+export type SportType = 'all' | 'swimming' | 'kayak' | 'fishing_boat';
+
 export interface BeachSpot {
   id: string;
   name: string;
@@ -90,6 +112,9 @@ export interface BeachSpot {
   highlights: string[];
   partnerIds: string[];
   distanceKm?: number;
+  coastalEnvironment: 'sheltered_lagoon' | 'open_strait' | 'deep_offshore_bay' | 'shallow_mangrove_flats' | 'shipping_channel' | 'urban_basin';
+  swimmingPermitted: boolean;
+  boatDraftClearance: 'deep' | 'medium' | 'shallow';
 }
 
 export interface PartnerVendor {
@@ -117,14 +142,26 @@ export interface LiveStreamStatus {
 
 export interface ActivitySuitability {
   score: number;
-  suitability: 'Optimal' | 'Favorable' | 'Challenging' | 'Hazardous';
+  suitability: 'Optimal' | 'Favorable' | 'Challenging' | 'Hazardous' | 'Prohibited';
   advice: string;
 }
 
 export interface SuitabilityBreakdown {
-  overallScore: number;
+  waveScore: number; // 0 to 100 tailored to current active sport type
   rating: 'Prime' | 'Good' | 'Moderate' | 'Caution';
   conditionSummary: string;
+  sportWaveScores: {
+    swimming: number;
+    kayak: number;
+    fishing_boat: number;
+    all: number;
+  };
+  sportAdvice: {
+    swimming: string;
+    kayak: string;
+    fishing_boat: string;
+    all: string;
+  };
   activities: Record<string, ActivitySuitability>;
   windSpeedKmh: number;
   windSpeedKnots: number;
@@ -137,5 +174,7 @@ export interface SuitabilityBreakdown {
   uvBand: string;
   wbgtCelsius: number;
   heatCategory: string;
+  rainForecastToday: RainForecastDay | null;
+  rainRiskLevel: 'Low' | 'Moderate' | 'High' | 'Heavy Thunderstorms';
   warnings: string[];
 }

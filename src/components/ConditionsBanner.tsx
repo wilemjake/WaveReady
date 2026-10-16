@@ -1,5 +1,5 @@
 import React from 'react';
-import { AlertCircle, CheckCircle2, Clock, RefreshCw, XCircle } from 'lucide-react';
+import { AlertCircle, CheckCircle2, Clock, CloudRain, RefreshCw, XCircle } from 'lucide-react';
 import { LiveStreamStatus } from '../types/index.ts';
 
 interface ConditionsBannerProps {
@@ -9,6 +9,7 @@ interface ConditionsBannerProps {
     heatStress: LiveStreamStatus;
     windDirection: LiveStreamStatus;
     windSpeed: LiveStreamStatus;
+    rain?: LiveStreamStatus;
   };
   isLoading: boolean;
   onRefresh: () => void;
@@ -24,7 +25,8 @@ export const ConditionsBanner: React.FC<ConditionsBannerProps> = ({
     { label: 'UV Index', key: 'uv', ...statuses.uv },
     { label: 'Heat Stress (WBGT)', key: 'heatStress', ...statuses.heatStress },
     { label: 'Wind Direction', key: 'windDirection', ...statuses.windDirection },
-    { label: 'Wind Speed', key: 'windSpeed', ...statuses.windSpeed }
+    { label: 'Wind Speed', key: 'windSpeed', ...statuses.windSpeed },
+    ...(statuses.rain ? [{ label: '4-Day Rain Forecast', key: 'rain', ...statuses.rain }] : [])
   ];
 
   const issues = streamList.filter((s) => s.state !== 'live');

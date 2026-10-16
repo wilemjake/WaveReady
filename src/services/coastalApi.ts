@@ -3,6 +3,7 @@ import {
   UVData,
   HeatStressData,
   WindDataGovResponse,
+  RainForecastData,
   LiveStreamStatus
 } from '../types/index.ts';
 
@@ -51,7 +52,6 @@ async function fetchStream<T>(
 
     const json = await res.json();
 
-    // Check if data is empty
     if (!json || (Array.isArray(json) && json.length === 0) || (typeof json === 'object' && Object.keys(json).length === 0)) {
       return {
         data: null,
@@ -74,6 +74,19 @@ async function fetchStream<T>(
           endpoint,
           state: 'empty',
           plainMessage: 'No tidal readings available for Singapore coastal waters today.',
+          timestamp: now
+        }
+      };
+    }
+
+    if (endpoint.includes('rain') && (!json.forecasts || json.forecasts.length === 0)) {
+      return {
+        data: json,
+        status: {
+          source: sourceName,
+          endpoint,
+          state: 'empty',
+          plainMessage: 'No 4-day precipitation forecast available from NEA.',
           timestamp: now
         }
       };
@@ -118,12 +131,13 @@ async function fetchStream<T>(
 }
 
 export async function fetchAllCoastalData() {
-  const [tidesRes, uvRes, heatStressRes, windDirRes, windSpeedRes] = await Promise.all([
+  const [tidesRes, uvRes, heatStressRes, windDirRes, windSpeedRes, rainRes] = await Promise.all([
     fetchStream<TidesData>('/api/tides', 'NEA Coastal Tides'),
     fetchStream<UVData>('/api/uv', 'NEA UV Index'),
     fetchStream<HeatStressData>('/api/heat-stress', 'NEA Heat Stress WBGT'),
     fetchStream<WindDataGovResponse>('/api/wind-direction', 'Data.gov.sg Wind Direction'),
-    fetchStream<WindDataGovResponse>('/api/wind-speed', 'Data.gov.sg Wind Speed')
+    fetchStream<WindDataGovResponse>('/api/wind-speed', 'Data.gov.sg Wind Speed'),
+    fetchStream<RainForecastData>('/api/rain', 'NEA 4-Day Rain Forecast')
   ]);
 
   return {
@@ -132,12 +146,14 @@ export async function fetchAllCoastalData() {
     heatStress: heatStressRes.data,
     windDirection: windDirRes.data,
     windSpeed: windSpeedRes.data,
+    rain: rainRes.data,
     statuses: {
       tides: tidesRes.status,
       uv: uvRes.status,
       heatStress: heatStressRes.status,
       windDirection: windDirRes.status,
-      windSpeed: windSpeedRes.status
+      windSpeed: windSpeedRes.status,
+      rain: rainRes.status
     }
   };
 }

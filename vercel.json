@@ -6,6 +6,7 @@
     { "source": "/api/heat-stress", "destination": "/api/NEA?endpoint=heat-stress" },
     { "source": "/api/wind-direction", "destination": "/api/NEA?endpoint=wind-direction" },
     { "source": "/api/wind-speed", "destination": "/api/NEA?endpoint=wind-speed" },
+    { "source": "/api/rain", "destination": "/api/NEA?endpoint=rain" },
     { "source": "/api/health", "destination": "/api/health" },
     { "source": "/health", "destination": "/api/health" }
   ]

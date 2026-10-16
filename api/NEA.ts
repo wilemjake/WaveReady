@@ -64,11 +64,27 @@ export default async function handler(req: any, res: any) {
     else if (urlPath.includes('/heat-stress')) endpoint = 'heat-stress';
     else if (urlPath.includes('/wind-direction')) endpoint = 'wind-direction';
     else if (urlPath.includes('/wind-speed')) endpoint = 'wind-speed';
+    else if (urlPath.includes('/rain')) endpoint = 'rain';
     else endpoint = 'overview';
   }
 
   try {
     switch (endpoint) {
+      case 'rain': {
+        // 4-day rain and weather forecast from NEA: https://neaweather.com/api/v1/forecast/4day
+        const targetUrl = 'https://neaweather.com/api/v1/forecast/4day';
+        const response = await fetchWithTimeout(targetUrl);
+        if (!response.ok) {
+          return res.status(response.status).json({
+            error: `NEA 4-Day Rain Forecast service returned HTTP ${response.status}`,
+            endpoint: '/api/rain',
+            data: null
+          });
+        }
+        const data = await response.json();
+        return res.status(200).json(data);
+      }
+
       case 'tides': {
         const targetUrl = 'https://neaweather.com/api/v1/tides';
         const response = await fetchWithTimeout(targetUrl);
@@ -163,7 +179,8 @@ export default async function handler(req: any, res: any) {
             '/api/uv',
             '/api/heat-stress',
             '/api/wind-direction',
-            '/api/wind-speed'
+            '/api/wind-speed',
+            '/api/rain'
           ]
         });
       }

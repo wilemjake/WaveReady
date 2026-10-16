@@ -1,6 +1,6 @@
 import React, { useEffect, useRef } from 'react';
 import L from 'leaflet';
-import { BeachSpot, SuitabilityBreakdown } from '../types/index.ts';
+import { BeachSpot, SuitabilityBreakdown, SportType } from '../types/index.ts';
 import { formatDistance } from '../utils/distance.ts';
 
 interface MapComponentProps {
@@ -9,6 +9,7 @@ interface MapComponentProps {
   selectedBeachId: string | null;
   onSelectBeach: (beach: BeachSpot) => void;
   userCoords: { lat: number; lng: number } | null;
+  activeSport: SportType;
 }
 
 export const MapComponent: React.FC<MapComponentProps> = ({
@@ -16,19 +17,28 @@ export const MapComponent: React.FC<MapComponentProps> = ({
   suitabilities,
   selectedBeachId,
   onSelectBeach,
-  userCoords
+  userCoords,
+  activeSport
 }) => {
   const mapContainerRef = useRef<HTMLDivElement>(null);
   const mapInstanceRef = useRef<L.Map | null>(null);
   const markersGroupRef = useRef<L.LayerGroup | null>(null);
   const userMarkerRef = useRef<L.Marker | null>(null);
 
+  const sportLabel =
+    activeSport === 'swimming'
+      ? 'Swimming'
+      : activeSport === 'kayak'
+      ? 'Kayak'
+      : activeSport === 'fishing_boat'
+      ? 'Fishing Boat'
+      : 'All Water Sports';
+
   // Initialize Map
   useEffect(() => {
     if (!mapContainerRef.current) return;
     if (mapInstanceRef.current) return;
 
-    // Singapore center coordinates
     const map = L.map(mapContainerRef.current, {
       center: [1.295, 103.84],
       zoom: 12,
@@ -38,7 +48,6 @@ export const MapComponent: React.FC<MapComponentProps> = ({
       attributionControl: true
     });
 
-    // Sub-goal 2.a: OneMap tiles basemap
     const onemapTiles = L.tileLayer(
       'https://www.onemap.gov.sg/maps/tiles/Default/{z}/{x}/{y}.png',
       {
@@ -63,7 +72,7 @@ export const MapComponent: React.FC<MapComponentProps> = ({
     };
   }, []);
 
-  // Update Beach Markers
+  // Update Beach Markers with Widened Wave Score
   useEffect(() => {
     const map = mapInstanceRef.current;
     const markersGroup = markersGroupRef.current;
@@ -73,14 +82,22 @@ export const MapComponent: React.FC<MapComponentProps> = ({
 
     beaches.forEach((beach) => {
       const suitability = suitabilities[beach.id];
-      const score = suitability?.overallScore ?? 80;
+      const score = suitability?.waveScore ?? 75;
       const isSelected = beach.id === selectedBeachId;
 
-      // Color coding based on suitability score
-      const bgHex = score >= 85 ? '#10b981' : score >= 70 ? '#06b6d4' : '#f59e0b';
-      const borderHex = isSelected ? '#ffffff' : 'rgba(255,255,255,0.7)';
+      // Full spectrum color coding reflecting widened range (from ~24 to 96)
+      const bgHex =
+        score >= 85
+          ? '#10b981' // Green
+          : score >= 70
+          ? '#06b6d4' // Cyan
+          : score >= 50
+          ? '#f59e0b' // Amber
+          : '#f43f5e'; // Rose / Caution
 
-      // Custom HTML Marker Icon
+      const borderHex = isSelected ? '#38bdf8' : 'rgba(255,255,255,0.7)';
+      const borderWidth = isSelected ? '3px' : '2px';
+
       const customIcon = L.divIcon({
         className: 'custom-coastal-marker',
         html: `
@@ -88,81 +105,95 @@ export const MapComponent: React.FC<MapComponentProps> = ({
             display: flex;
             align-items: center;
             justify-content: center;
-            background: #0f172a;
-            border: 2px solid ${borderHex};
+            background: #090d16;
+            border: ${borderWidth} solid ${borderHex};
             border-radius: 9999px;
-            box-shadow: 0 4px 12px rgba(0,0,0,0.5);
-            padding: 3px 8px;
+            box-shadow: 0 4px 14px rgba(0,0,0,0.65);
+            padding: 3px 9px;
             cursor: pointer;
             transform: translate(-50%, -50%);
             white-space: nowrap;
-            gap: 5px;
+            gap: 6px;
           ">
             <span style="
-              width: 8px;
-              height: 8px;
+              width: 9px;
+              height: 9px;
               border-radius: 9999px;
               background-color: ${bgHex};
               display: inline-block;
+              box-shadow: 0 0 6px ${bgHex};
             "></span>
             <span style="
               color: #f8fafc;
               font-size: 11px;
-              font-weight: 700;
-              font-family: 'Plus Jakarta Sans', sans-serif;
+              font-weight: 800;
+              font-family: 'JetBrains Mono', monospace;
             ">${score}</span>
             <span style="
               color: #94a3b8;
               font-size: 10px;
-              font-weight: 500;
+              font-weight: 600;
             ">${beach.name.split(' ')[0]}</span>
           </div>
         `,
-        iconSize: [80, 28],
-        iconAnchor: [40, 14]
+        iconSize: [86, 28],
+        iconAnchor: [43, 14]
       });
 
       const marker = L.marker([beach.lat, beach.lng], { icon: customIcon });
 
-      // Rich popup
+      const rainText = suitability?.rainForecastToday
+        ? `${suitability.rainForecastToday.forecast}`
+        : 'Radar clear';
+
       const popupHtml = `
-        <div style="min-width: 200px; font-family: 'Plus Jakarta Sans', sans-serif;">
-          <div style="font-size: 13px; font-weight: 700; color: #f8fafc; margin-bottom: 2px;">
+        <div style="min-width: 220px; font-family: 'Plus Jakarta Sans', sans-serif;">
+          <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 3px;">
+            <span style="font-size: 10px; font-weight: 700; color: #38bdf8; text-transform: uppercase;">
+              Wave Score · ${sportLabel}
+            </span>
+            <span style="font-size: 10px; font-weight: 700; color: ${bgHex}; background: rgba(255,255,255,0.08); padding: 1px 6px; border-radius: 4px;">
+              ${suitability?.rating || 'Good'}
+            </span>
+          </div>
+          <div style="font-size: 14px; font-weight: 800; color: #f8fafc; margin-bottom: 2px;">
             ${beach.name}
           </div>
-          <div style="font-size: 11px; color: #38bdf8; margin-bottom: 8px;">
+          <div style="font-size: 11px; color: #94a3b8; margin-bottom: 8px;">
             ${beach.zone} · ${formatDistance(beach.distanceKm)}
           </div>
-          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 6px; font-size: 11px; background: rgba(255,255,255,0.05); padding: 8px; border-radius: 8px; margin-bottom: 8px;">
-            <div>
-              <span style="color: #94a3b8; display: block; font-size: 10px;">Suitability</span>
-              <strong style="color: ${bgHex}; font-size: 12px;">${score}/100 (${suitability?.rating || 'Good'})</strong>
+
+          <div style="background: rgba(255,255,255,0.06); padding: 8px; border-radius: 8px; margin-bottom: 8px; font-size: 11px;">
+            <div style="display: flex; justify-content: space-between; margin-bottom: 4px;">
+              <span style="color: #94a3b8;">Wave Score</span>
+              <strong style="color: ${bgHex}; font-size: 13px; font-family: monospace;">${score}/100</strong>
             </div>
-            <div>
-              <span style="color: #94a3b8; display: block; font-size: 10px;">Wind</span>
-              <strong style="color: #f8fafc;">${suitability?.windSpeedKmh || '--'} km/h ${suitability?.windCompass || ''}</strong>
+            <div style="display: flex; justify-content: space-between; margin-bottom: 4px;">
+              <span style="color: #94a3b8;">Tide (NEA)</span>
+              <span style="color: #f1f5f9; font-weight: 600;">${suitability?.tideHeightM ? `${suitability.tideHeightM}m` : 'Cycle active'}</span>
             </div>
-            <div>
-              <span style="color: #94a3b8; display: block; font-size: 10px;">Tide</span>
-              <strong style="color: #f8fafc;">${suitability?.tideHeightM ? `${suitability.tideHeightM}m` : 'Cycle Active'}</strong>
+            <div style="display: flex; justify-content: space-between; margin-bottom: 4px;">
+              <span style="color: #94a3b8;">Wind</span>
+              <span style="color: #f1f5f9; font-weight: 600;">${suitability?.windSpeedKmh || '--'} km/h ${suitability?.windCompass || ''}</span>
             </div>
-            <div>
-              <span style="color: #94a3b8; display: block; font-size: 10px;">Heat (WBGT)</span>
-              <strong style="color: #f8fafc;">${suitability?.wbgtCelsius || '--'}°C</strong>
+            <div style="display: flex; justify-content: space-between;">
+              <span style="color: #94a3b8;">4-Day Rain</span>
+              <span style="color: #38bdf8; font-weight: 600;">${rainText}</span>
             </div>
           </div>
+
           <button id="btn-inspect-${beach.id}" style="
             width: 100%;
             background: #0284c7;
             color: white;
             border: none;
             border-radius: 6px;
-            padding: 6px 10px;
+            padding: 7px 10px;
             font-size: 11px;
-            font-weight: 600;
+            font-weight: 700;
             cursor: pointer;
           ">
-            View Tides & Charters
+            Inspect Beach & Forecast
           </button>
         </div>
       `;
@@ -191,7 +222,7 @@ export const MapComponent: React.FC<MapComponentProps> = ({
         marker.openPopup();
       }
     });
-  }, [beaches, suitabilities, selectedBeachId, onSelectBeach]);
+  }, [beaches, suitabilities, selectedBeachId, onSelectBeach, activeSport, sportLabel]);
 
   // Update User Location Marker
   useEffect(() => {
@@ -262,9 +293,9 @@ export const MapComponent: React.FC<MapComponentProps> = ({
       {/* Floating Basemap Info Overlay */}
       <div className="absolute bottom-3 left-3 z-20 bg-slate-950/85 backdrop-blur-md border border-slate-800 rounded-lg px-2.5 py-1.5 text-[10px] text-slate-400 flex items-center gap-2 pointer-events-none">
         <span className="w-2 h-2 rounded-full bg-cyan-400"></span>
-        <span>OneMap SLA Basemap Layer</span>
+        <span>OneMap Basemap</span>
         <span className="text-slate-600">·</span>
-        <span>Tap any pin to view live tides</span>
+        <span className="text-cyan-300 font-semibold">Wave Score: {sportLabel}</span>
       </div>
     </div>
   );

@@ -5,6 +5,9 @@ import {
   Calendar,
   CheckCircle2,
   Clock,
+  CloudDrizzle,
+  CloudLightning,
+  CloudRain,
   Compass,
   Droplets,
   ExternalLink,
@@ -12,16 +15,19 @@ import {
   Phone,
   ShieldCheck,
   Sun,
+  Thermometer,
+  Waves,
   Wind,
   X
 } from 'lucide-react';
-import { BeachSpot, SuitabilityBreakdown, TidesData, PartnerVendor } from '../types/index.ts';
+import { BeachSpot, SuitabilityBreakdown, TidesData, RainForecastData, PartnerVendor } from '../types/index.ts';
 import { formatDistance } from '../utils/distance.ts';
 
 interface BeachDetailModalProps {
   beach: BeachSpot;
   suitability: SuitabilityBreakdown | undefined;
   tidesData: TidesData | null;
+  rainData: RainForecastData | null;
   partners: PartnerVendor[];
   onClose: () => void;
   onBookPartner: (partner: PartnerVendor) => void;
@@ -31,12 +37,25 @@ export const BeachDetailModal: React.FC<BeachDetailModalProps> = ({
   beach,
   suitability,
   tidesData,
+  rainData,
   partners,
   onClose,
   onBookPartner
 }) => {
-  const [activeTab, setActiveTab] = useState<'conditions' | 'tides' | 'partners'>('conditions');
+  const [activeTab, setActiveTab] = useState<'wave_score' | 'rain' | 'tides' | 'partners'>('wave_score');
   const assignedPartners = partners.filter((p) => beach.partnerIds.includes(p.id));
+
+  const waveScore = suitability?.waveScore ?? 75;
+  const rating = suitability?.rating ?? 'Good';
+
+  const badgeStyle =
+    waveScore >= 85
+      ? 'text-emerald-300 bg-emerald-500/15 border-emerald-500/40'
+      : waveScore >= 70
+      ? 'text-cyan-300 bg-cyan-500/15 border-cyan-500/40'
+      : waveScore >= 50
+      ? 'text-amber-300 bg-amber-500/15 border-amber-500/40'
+      : 'text-rose-300 bg-rose-500/15 border-rose-500/40';
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/80 backdrop-blur-md overflow-y-auto">
@@ -69,52 +88,65 @@ export const BeachDetailModal: React.FC<BeachDetailModalProps> = ({
         </div>
 
         {/* Segmented Tab Navigation */}
-        <div className="px-6 pt-3 border-b border-slate-800 bg-slate-950/30 flex gap-2">
+        <div className="px-6 pt-3 border-b border-slate-800 bg-slate-950/30 flex gap-2 overflow-x-auto">
           <button
-            onClick={() => setActiveTab('conditions')}
-            className={`pb-3 text-xs font-semibold px-2 border-b-2 transition-colors cursor-pointer ${
-              activeTab === 'conditions'
+            onClick={() => setActiveTab('wave_score')}
+            className={`pb-3 text-xs font-semibold px-2 border-b-2 whitespace-nowrap transition-colors cursor-pointer ${
+              activeTab === 'wave_score'
                 ? 'text-cyan-400 border-cyan-400'
                 : 'text-slate-400 border-transparent hover:text-slate-200'
             }`}
           >
-            Real-Time Conditions & Score
+            Wave Score Breakdown
+          </button>
+          <button
+            onClick={() => setActiveTab('rain')}
+            className={`pb-3 text-xs font-semibold px-2 border-b-2 whitespace-nowrap transition-colors cursor-pointer ${
+              activeTab === 'rain'
+                ? 'text-cyan-400 border-cyan-400'
+                : 'text-slate-400 border-transparent hover:text-slate-200'
+            }`}
+          >
+            4-Day NEA Rain Forecast
           </button>
           <button
             onClick={() => setActiveTab('tides')}
-            className={`pb-3 text-xs font-semibold px-2 border-b-2 transition-colors cursor-pointer ${
+            className={`pb-3 text-xs font-semibold px-2 border-b-2 whitespace-nowrap transition-colors cursor-pointer ${
               activeTab === 'tides'
                 ? 'text-cyan-400 border-cyan-400'
                 : 'text-slate-400 border-transparent hover:text-slate-200'
             }`}
           >
-            NEA Tidal Forecast
+            Tidal Schedule
           </button>
           <button
             onClick={() => setActiveTab('partners')}
-            className={`pb-3 text-xs font-semibold px-2 border-b-2 transition-colors cursor-pointer ${
+            className={`pb-3 text-xs font-semibold px-2 border-b-2 whitespace-nowrap transition-colors cursor-pointer ${
               activeTab === 'partners'
                 ? 'text-cyan-400 border-cyan-400'
                 : 'text-slate-400 border-transparent hover:text-slate-200'
             }`}
           >
-            Verified Charters & Gear ({assignedPartners.length})
+            Charters & Gear ({assignedPartners.length})
           </button>
         </div>
 
         {/* Modal Scrollable Body */}
         <div className="p-6 overflow-y-auto space-y-6 flex-1">
-          {activeTab === 'conditions' && (
+          {activeTab === 'wave_score' && (
             <>
-              {/* Overall Score Box */}
-              <div className="bg-slate-950/80 rounded-2xl p-4 border border-slate-800 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+              {/* Primary Wave Score Box */}
+              <div className="bg-slate-950/80 rounded-2xl p-5 border border-slate-800 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
                 <div>
-                  <div className="text-xs text-slate-400">Composite Suitability Rating</div>
-                  <div className="text-3xl font-extrabold text-white mt-1 tabular-nums">
-                    {suitability?.overallScore ?? 80}
+                  <div className="text-xs text-slate-400 flex items-center gap-1.5 font-semibold">
+                    <Waves className="w-4 h-4 text-cyan-400" />
+                    <span>Official WaveReady Wave Score</span>
+                  </div>
+                  <div className="text-3xl font-extrabold text-white mt-1 tabular-nums flex items-baseline gap-2">
+                    <span>{waveScore}</span>
                     <span className="text-sm font-semibold text-slate-400">/100</span>
-                    <span className="ml-3 text-xs font-bold uppercase tracking-wider text-cyan-400 bg-cyan-500/10 border border-cyan-500/30 px-2 py-0.5 rounded">
-                      {suitability?.rating ?? 'Good'}
+                    <span className={`text-xs font-bold uppercase tracking-wider px-2 py-0.5 rounded border ${badgeStyle}`}>
+                      {rating}
                     </span>
                   </div>
                   <div className="text-xs text-slate-300 mt-1">
@@ -123,17 +155,91 @@ export const BeachDetailModal: React.FC<BeachDetailModalProps> = ({
                 </div>
 
                 <div className="text-xs text-slate-400 sm:text-right border-t sm:border-t-0 sm:border-l border-slate-800 pt-3 sm:pt-0 sm:pl-4">
-                  <div>Nearest Wind Sensor: <strong>{beach.closestWindStationId}</strong></div>
-                  <div>Ideal Tide: <strong className="capitalize">{beach.idealTideLevel} tide</strong></div>
+                  <div>Coastal Environment: <strong className="capitalize text-slate-200">{beach.coastalEnvironment.replace('_', ' ')}</strong></div>
+                  <div>Boat Clearance: <strong className="capitalize text-cyan-400">{beach.boatDraftClearance} Draft</strong></div>
+                  <div>Legal Swimming: <strong className={beach.swimmingPermitted ? 'text-emerald-400' : 'text-rose-400'}>{beach.swimmingPermitted ? 'Permitted' : 'Prohibited'}</strong></div>
                 </div>
               </div>
+
+              {/* Three Core Sports Comparison (Investor Highlight) */}
+              {suitability && (
+                <div>
+                  <div className="flex items-center justify-between mb-3">
+                    <h4 className="text-xs font-bold uppercase tracking-wider text-slate-300">
+                      Tailored Wave Score by Sport Type
+                    </h4>
+                    <span className="text-[10px] text-cyan-400 font-semibold">
+                      Widened variance based on coastal bathymetry & currents
+                    </span>
+                  </div>
+
+                  <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                    {/* Swimming */}
+                    <div className="bg-slate-950/60 border border-slate-800/80 rounded-2xl p-4 flex flex-col justify-between">
+                      <div>
+                        <div className="flex items-center justify-between">
+                          <span className="text-xs font-bold text-white">🏊 Swimming</span>
+                          <span className={`text-base font-extrabold font-mono ${suitability.sportWaveScores.swimming >= 75 ? 'text-emerald-400' : suitability.sportWaveScores.swimming >= 50 ? 'text-amber-400' : 'text-rose-400'}`}>
+                            {suitability.sportWaveScores.swimming}
+                            <span className="text-[10px] text-slate-500 font-normal">/100</span>
+                          </span>
+                        </div>
+                        <p className="text-[11px] text-slate-400 mt-2 leading-relaxed">
+                          {suitability.sportAdvice.swimming}
+                        </p>
+                      </div>
+                      <div className="mt-3 pt-2 border-t border-slate-800/80 text-[10px] font-semibold text-slate-400">
+                        {beach.swimmingPermitted ? 'Designated swim zone' : 'Port fairway - No swimming'}
+                      </div>
+                    </div>
+
+                    {/* Kayak */}
+                    <div className="bg-slate-950/60 border border-slate-800/80 rounded-2xl p-4 flex flex-col justify-between">
+                      <div>
+                        <div className="flex items-center justify-between">
+                          <span className="text-xs font-bold text-white">🛶 Kayak & SUP</span>
+                          <span className={`text-base font-extrabold font-mono ${suitability.sportWaveScores.kayak >= 75 ? 'text-emerald-400' : suitability.sportWaveScores.kayak >= 50 ? 'text-amber-400' : 'text-rose-400'}`}>
+                            {suitability.sportWaveScores.kayak}
+                            <span className="text-[10px] text-slate-500 font-normal">/100</span>
+                          </span>
+                        </div>
+                        <p className="text-[11px] text-slate-400 mt-2 leading-relaxed">
+                          {suitability.sportAdvice.kayak}
+                        </p>
+                      </div>
+                      <div className="mt-3 pt-2 border-t border-slate-800/80 text-[10px] font-semibold text-slate-400">
+                        Swell rating: {beach.coastalEnvironment === 'shallow_mangrove_flats' ? 'Flat calm' : 'Active chop'}
+                      </div>
+                    </div>
+
+                    {/* Fishing Boat */}
+                    <div className="bg-slate-950/60 border border-slate-800/80 rounded-2xl p-4 flex flex-col justify-between">
+                      <div>
+                        <div className="flex items-center justify-between">
+                          <span className="text-xs font-bold text-white">🎣 Fishing Boat</span>
+                          <span className={`text-base font-extrabold font-mono ${suitability.sportWaveScores.fishing_boat >= 75 ? 'text-emerald-400' : suitability.sportWaveScores.fishing_boat >= 50 ? 'text-amber-400' : 'text-rose-400'}`}>
+                            {suitability.sportWaveScores.fishing_boat}
+                            <span className="text-[10px] text-slate-500 font-normal">/100</span>
+                          </span>
+                        </div>
+                        <p className="text-[11px] text-slate-400 mt-2 leading-relaxed">
+                          {suitability.sportAdvice.fishing_boat}
+                        </p>
+                      </div>
+                      <div className="mt-3 pt-2 border-t border-slate-800/80 text-[10px] font-semibold text-slate-400">
+                        Channel draft: {beach.boatDraftClearance.toUpperCase()} clearance
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              )}
 
               {/* Warnings / Cautions if any */}
               {suitability?.warnings && suitability.warnings.length > 0 && (
                 <div className="space-y-2">
                   <div className="text-xs font-semibold text-slate-300 flex items-center gap-1.5">
                     <AlertTriangle className="w-4 h-4 text-amber-400" />
-                    <span>Coastal Safety Notices</span>
+                    <span>Coastal & Weather Advisories</span>
                   </div>
                   {suitability.warnings.map((warn, i) => (
                     <div
@@ -146,50 +252,7 @@ export const BeachDetailModal: React.FC<BeachDetailModalProps> = ({
                 </div>
               )}
 
-              {/* Activity Suitability Matrix */}
-              <div>
-                <h4 className="text-xs font-semibold uppercase tracking-wider text-slate-400 mb-3">
-                  Activity-Specific Conditions
-                </h4>
-                <div className="space-y-2.5">
-                  {suitability &&
-                    Object.entries(suitability.activities).map(([activity, data]) => {
-                      const isHigh = data.score >= 80;
-                      const isModerate = data.score >= 60;
-                      return (
-                        <div
-                          key={activity}
-                          className="bg-slate-950/40 border border-slate-800/80 rounded-xl p-3 flex flex-col sm:flex-row sm:items-center justify-between gap-3"
-                        >
-                          <div>
-                            <div className="flex items-center gap-2">
-                              <span className="text-xs font-bold text-slate-100">{activity}</span>
-                              <span
-                                className={`text-[10px] font-semibold px-2 py-0.5 rounded ${
-                                  isHigh
-                                    ? 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/30'
-                                    : isModerate
-                                    ? 'bg-cyan-500/10 text-cyan-400 border border-cyan-500/30'
-                                    : 'bg-rose-500/10 text-rose-400 border border-rose-500/30'
-                                }`}
-                              >
-                                {data.suitability}
-                              </span>
-                            </div>
-                            <div className="text-xs text-slate-400 mt-1">{data.advice}</div>
-                          </div>
-
-                          <div className="text-base font-bold tabular-nums text-slate-200 shrink-0">
-                            {data.score}
-                            <span className="text-xs text-slate-500 font-normal">/100</span>
-                          </div>
-                        </div>
-                      );
-                    })}
-                </div>
-              </div>
-
-              {/* Key Environmental Breakdown */}
+              {/* Environmental Telemetry Metrics */}
               <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
                 <div className="bg-slate-950/50 p-3 rounded-xl border border-slate-800">
                   <div className="text-[10px] text-slate-400 flex items-center gap-1 mb-1">
@@ -200,7 +263,7 @@ export const BeachDetailModal: React.FC<BeachDetailModalProps> = ({
                     {suitability?.windSpeedKmh} km/h
                   </div>
                   <div className="text-[10px] text-slate-400">
-                    {suitability?.windSpeedKnots} knots · {suitability?.windCompass}
+                    {suitability?.windSpeedKnots} kts · {suitability?.windCompass}
                   </div>
                 </div>
 
@@ -244,6 +307,72 @@ export const BeachDetailModal: React.FC<BeachDetailModalProps> = ({
                 </div>
               </div>
             </>
+          )}
+
+          {activeTab === 'rain' && (
+            <div className="space-y-4">
+              <div className="bg-slate-950/60 p-4 rounded-2xl border border-slate-800 flex items-start justify-between gap-4">
+                <div>
+                  <div className="text-xs font-semibold text-slate-200 mb-1 flex items-center gap-1.5">
+                    <CloudRain className="w-4 h-4 text-cyan-400" />
+                    <span>NEA Official 4-Day Precipitation Telemetry</span>
+                  </div>
+                  <p className="text-xs text-slate-400">
+                    Real-time weather radar fetched via project endpoint <code className="text-cyan-400 font-mono">/api/rain</code>. Crucial for scheduling expensive fishing boat charters and avoiding offshore lightning storms.
+                  </p>
+                </div>
+              </div>
+
+              {rainData?.forecasts && rainData.forecasts.length > 0 ? (
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                  {rainData.forecasts.slice(0, 4).map((day, idx) => (
+                    <div
+                      key={idx}
+                      className="bg-slate-950/70 border border-slate-800 rounded-xl p-4 flex flex-col justify-between"
+                    >
+                      <div>
+                        <div className="flex items-center justify-between mb-2">
+                          <span className="text-xs font-bold text-white">
+                            {idx === 0 ? 'Today' : day.day_name} ({day.date})
+                          </span>
+                          {day.forecast.toLowerCase().includes('thunder') ? (
+                            <CloudLightning className="w-4 h-4 text-amber-400" />
+                          ) : (
+                            <CloudRain className="w-4 h-4 text-cyan-400" />
+                          )}
+                        </div>
+
+                        <div className="text-xs font-semibold text-cyan-300">
+                          {day.forecast}
+                        </div>
+                        <p className="text-[11px] text-slate-400 mt-1">
+                          {day.forecast_summary || day.forecast}
+                        </p>
+                      </div>
+
+                      <div className="mt-3 pt-3 border-t border-slate-800/80 text-[11px] space-y-1 text-slate-300 font-mono">
+                        <div className="flex justify-between">
+                          <span className="text-slate-500 font-sans">Temp:</span>
+                          <span>{day.temperature_low}°C to {day.temperature_high}°C</span>
+                        </div>
+                        <div className="flex justify-between">
+                          <span className="text-slate-500 font-sans">Wind:</span>
+                          <span>{day.wind_speed_low}-{day.wind_speed_high} km/h {day.wind_direction}</span>
+                        </div>
+                        <div className="flex justify-between">
+                          <span className="text-slate-500 font-sans">Humidity:</span>
+                          <span>{day.humidity_low}% - {day.humidity_high}%</span>
+                        </div>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              ) : (
+                <div className="p-8 text-center text-xs text-slate-400 bg-slate-950/40 rounded-xl border border-slate-800">
+                  Precipitation forecast feed currently loading or unavailable.
+                </div>
+              )}
+            </div>
           )}
 
           {activeTab === 'tides' && (

@@ -45,6 +45,11 @@ async function startServer() {
     return neaHandler(req, res);
   });
 
+  app.all('/api/rain', (req, res) => {
+    req.query = { ...req.query, endpoint: 'rain' };
+    return neaHandler(req, res);
+  });
+
   app.all('/api/NEA', (req, res) => {
     return neaHandler(req, res);
   });
