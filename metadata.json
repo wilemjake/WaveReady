@@ -1,0 +1,10 @@
+{
+  "name": "WaveReady",
+  "description": "Singapore coastal weather, tides, and water sports intelligence for yacht charters, jetskiing, and fishing enthusiasts.",
+  "requestFramePermissions": [
+    "geolocation"
+  ],
+  "majorCapabilities": [
+    "MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"
+  ]
+}

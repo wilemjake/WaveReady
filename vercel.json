@@ -1,0 +1,12 @@
+{
+  "framework": "vite",
+  "rewrites": [
+    { "source": "/api/tides", "destination": "/api/NEA?endpoint=tides" },
+    { "source": "/api/uv", "destination": "/api/NEA?endpoint=uv" },
+    { "source": "/api/heat-stress", "destination": "/api/NEA?endpoint=heat-stress" },
+    { "source": "/api/wind-direction", "destination": "/api/NEA?endpoint=wind-direction" },
+    { "source": "/api/wind-speed", "destination": "/api/NEA?endpoint=wind-speed" },
+    { "source": "/api/health", "destination": "/api/health" },
+    { "source": "/health", "destination": "/api/health" }
+  ]
+}
