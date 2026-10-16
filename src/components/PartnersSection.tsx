@@ -115,6 +115,9 @@ export const PartnersSection: React.FC<PartnersSectionProps> = ({
                   src={partner.image}
                   alt={partner.name}
                   referrerPolicy="no-referrer"
+                  onError={(e) => {
+                    e.currentTarget.src = '/images/partner_fishing_boat.jpg';
+                  }}
                   className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
                 />
                 <div className="absolute top-3 left-3 bg-slate-950/80 backdrop-blur-md border border-slate-800 text-[10px] font-bold text-cyan-300 px-2.5 py-1 rounded-md uppercase tracking-wider">

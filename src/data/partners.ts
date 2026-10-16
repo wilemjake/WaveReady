@@ -1,4 +1,7 @@
 import { PartnerVendor } from '../types/index.ts';
+import heroYachtImg from '../assets/images/hero_yacht_coastal_1792134867117.jpg';
+import partnerFishingImg from '../assets/images/partner_fishing_boat_1792134868482.jpg';
+import partnerGearImg from '../assets/images/partner_watersports_gear_1792134867070.jpg';
 
 export const PARTNER_VENDORS: PartnerVendor[] = [
   {
@@ -10,7 +13,7 @@ export const PARTNER_VENDORS: PartnerVendor[] = [
     priceStartingFrom: '$650 / 4-hr charter',
     rating: 4.9,
     reviewsCount: 128,
-    image: '/src/assets/images/partner_fishing_boat_1792134868482.jpg',
+    image: partnerFishingImg,
     fleetOrGear: [
       '38ft Bertram Tournament Sportfisher (Twin Cummins 450HP)',
       'Shimano Stella & Talica reels, live bait system',
@@ -29,7 +32,7 @@ export const PARTNER_VENDORS: PartnerVendor[] = [
     priceStartingFrom: '$950 / 4-hr cruise',
     rating: 4.95,
     reviewsCount: 214,
-    image: '/src/assets/images/hero_yacht_coastal_1792134867117.jpg',
+    image: heroYachtImg,
     fleetOrGear: [
       '46ft Lagoon Sailing Catamaran & 55ft Azimut Yacht',
       'Full sun deck, air-conditioned saloon, sound system',
@@ -48,7 +51,7 @@ export const PARTNER_VENDORS: PartnerVendor[] = [
     priceStartingFrom: '$35 / hr rental',
     rating: 4.8,
     reviewsCount: 340,
-    image: '/src/assets/images/partner_watersports_gear_1792134867070.jpg',
+    image: partnerGearImg,
     fleetOrGear: [
       'Starboard & Fanatic carbon SUP boards with carbon paddles',
       'Severne windsurf rigs & Slingshot foil equipment',
@@ -67,7 +70,7 @@ export const PARTNER_VENDORS: PartnerVendor[] = [
     priceStartingFrom: '$190 / 30-min run',
     rating: 4.85,
     reviewsCount: 96,
-    image: '/src/assets/images/hero_yacht_coastal_1792134867117.jpg',
+    image: heroYachtImg,
     fleetOrGear: [
       '2026 Sea-Doo GTX Limited 300 Supercharged',
       'Rotax engine with intelligent brake and reverse (iBR)',
@@ -86,7 +89,7 @@ export const PARTNER_VENDORS: PartnerVendor[] = [
     priceStartingFrom: '$480 / 5-hr session',
     rating: 4.75,
     reviewsCount: 88,
-    image: '/src/assets/images/partner_fishing_boat_1792134868482.jpg',
+    image: partnerFishingImg,
     fleetOrGear: [
       '26ft Deep-V Center Console with Suzuki 200HP',
       'Live bait aerator well, rod holders, GPS fishfinder',
@@ -105,7 +108,7 @@ export const PARTNER_VENDORS: PartnerVendor[] = [
     priceStartingFrom: '$40 / 2-hr hire',
     rating: 4.8,
     reviewsCount: 162,
-    image: '/src/assets/images/partner_watersports_gear_1792134867070.jpg',
+    image: partnerGearImg,
     fleetOrGear: [
       'Ocean Kayak single and double sit-on-top sea kayaks',
       'Hobie Wave & Getaway performance sailing catamarans',
@@ -124,7 +127,7 @@ export const PARTNER_VENDORS: PartnerVendor[] = [
     priceStartingFrom: '$850 / 6-hr trip',
     rating: 4.9,
     reviewsCount: 74,
-    image: '/src/assets/images/partner_fishing_boat_1792134868482.jpg',
+    image: partnerFishingImg,
     fleetOrGear: [
       '42ft Twin Yanmar Sportfisher with enclosed flybridge',
       'High-capacity Furuno CHIRP radar and sonar transducers',

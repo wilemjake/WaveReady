@@ -468,6 +468,9 @@ export const BeachDetailModal: React.FC<BeachDetailModalProps> = ({
                         src={partner.image}
                         alt={partner.name}
                         referrerPolicy="no-referrer"
+                        onError={(e) => {
+                          e.currentTarget.src = '/images/partner_fishing_boat.jpg';
+                        }}
                         className="w-full sm:w-36 h-28 object-cover rounded-xl shrink-0"
                       />
                       <div className="flex-1 flex flex-col justify-between">

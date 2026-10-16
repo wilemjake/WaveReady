@@ -31,6 +31,7 @@ import { FourDayRainCard } from './components/FourDayRainCard.tsx';
 import { PartnersSection } from './components/PartnersSection.tsx';
 import { MembershipModal } from './components/MembershipModal.tsx';
 import { Footer } from './components/Footer.tsx';
+import heroYachtImg from './assets/images/hero_yacht_coastal_1792134867117.jpg';
 
 export default function App() {
   const [activeTab, setActiveTab] = useState<'map' | 'partners' | 'membership'>('map');
@@ -261,9 +262,12 @@ export default function App() {
 
                 <div className="lg:col-span-5 relative h-48 lg:h-auto min-h-[200px] overflow-hidden">
                   <img
-                    src="/src/assets/images/hero_yacht_coastal_1792134867117.jpg"
+                    src={heroYachtImg}
                     alt="WaveReady Singapore Coastal Cruising"
                     referrerPolicy="no-referrer"
+                    onError={(e) => {
+                      e.currentTarget.src = '/images/hero_yacht_coastal.jpg';
+                    }}
                     className="w-full h-full object-cover"
                   />
                   <div className="absolute inset-0 bg-gradient-to-t lg:bg-gradient-to-r from-slate-900 via-transparent to-transparent opacity-80" />
