@@ -51,7 +51,7 @@ export const BeachCard: React.FC<BeachCardProps> = ({
     activeSport === 'swimming'
       ? 'Swimming'
       : activeSport === 'kayak'
-      ? 'Kayak'
+      ? 'Jetski/Kayak/SUP'
       : activeSport === 'fishing_boat'
       ? 'Fishing Boat'
       : 'Composite';
@@ -111,7 +111,7 @@ export const BeachCard: React.FC<BeachCardProps> = ({
             </strong>
           </div>
           <div className={`p-1.5 rounded-lg border ${activeSport === 'kayak' ? 'bg-cyan-500/10 border-cyan-500/40' : 'bg-slate-950/40 border-slate-800/60'}`}>
-            <span className="text-slate-400 block text-[10px]">Kayak</span>
+            <span className="text-slate-400 block text-[10px] truncate">Jetski/Kayak/SUP</span>
             <strong className={`font-mono text-xs ${suitability.sportWaveScores.kayak >= 75 ? 'text-emerald-400' : suitability.sportWaveScores.kayak >= 50 ? 'text-amber-400' : 'text-rose-400'}`}>
               {suitability.sportWaveScores.kayak}
             </strong>

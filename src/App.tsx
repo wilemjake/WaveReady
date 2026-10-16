@@ -33,7 +33,7 @@ import { MembershipModal } from './components/MembershipModal.tsx';
 import { Footer } from './components/Footer.tsx';
 
 export default function App() {
-  const [activeTab, setActiveTab] = useState<'map' | 'beaches' | 'partners' | 'membership'>('map');
+  const [activeTab, setActiveTab] = useState<'map' | 'partners' | 'membership'>('map');
   const [viewMode, setViewMode] = useState<'split' | 'map' | 'list'>('split');
   const [selectedBeachId, setSelectedBeachId] = useState<string>(SINGAPORE_BEACHES[0].id);
   const [modalBeach, setModalBeach] = useState<BeachSpot | null>(null);
@@ -216,8 +216,8 @@ export default function App() {
           </div>
         )}
 
-        {/* Tab 1 & Tab 2: Map & Beaches View */}
-        {(activeTab === 'map' || activeTab === 'beaches') && (
+        {/* Tab 1: Coastal Map View */}
+        {activeTab === 'map' && (
           <div className="space-y-6">
             {/* Hero Quick Banner */}
             <div className="relative rounded-3xl overflow-hidden border border-slate-800 bg-slate-900/60 shadow-2xl">
@@ -325,7 +325,7 @@ export default function App() {
                       : 'bg-slate-950 text-slate-300 border-slate-800 hover:border-slate-700'
                   }`}
                 >
-                  <span>🛶 Kayak & SUP</span>
+                  <span>🛶 Jetski/Kayak/SUP</span>
                 </button>
 
                 <button
@@ -521,17 +521,7 @@ export default function App() {
           }`}
         >
           <Map className="w-5 h-5" />
-          <span className="text-[10px] mt-1">OneMap</span>
-        </button>
-
-        <button
-          onClick={() => setActiveTab('beaches')}
-          className={`flex flex-col items-center justify-center flex-1 py-1 cursor-pointer ${
-            activeTab === 'beaches' ? 'text-cyan-400 font-bold' : 'text-slate-400'
-          }`}
-        >
-          <Waves className="w-5 h-5" />
-          <span className="text-[10px] mt-1">Wave Score</span>
+          <span className="text-[10px] mt-1">Coastal Map</span>
         </button>
 
         <button

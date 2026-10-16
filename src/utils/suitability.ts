@@ -111,22 +111,22 @@ export function computeBeachSuitability(
 
   if (rainForecastToday) {
     const desc = (rainForecastToday.forecast + ' ' + (rainForecastToday.forecast_summary || '')).toLowerCase();
-    if (desc.includes('thundery') || desc.includes('thunderstorm')) {
+    if (desc.includes('thundery') || desc.includes('thunderstorm') || desc.includes('heavy rain')) {
       rainRiskLevel = 'Heavy Thunderstorms';
-      rainScorePenalty = 8;
-    } else if (desc.includes('heavy shower') || desc.includes('heavy rain')) {
+      rainScorePenalty = 70; // Severe penalty: drops score below 30 for safety
+    } else if (desc.includes('heavy shower')) {
       rainRiskLevel = 'High';
-      rainScorePenalty = 6;
+      rainScorePenalty = 45;
     } else if (desc.includes('shower') || desc.includes('rain')) {
       rainRiskLevel = 'Moderate';
-      rainScorePenalty = 3;
+      rainScorePenalty = 25;
     }
   }
 
   const warnings: string[] = [];
 
   if (rainRiskLevel === 'Heavy Thunderstorms') {
-    warnings.push(`NEA Alert: ${rainForecastToday?.forecast || 'Thundery Showers'} forecasted. Lightning risk in open water.`);
+    warnings.push(`Hazardous Weather Alert: ${rainForecastToday?.forecast || 'Thundery Showers'} forecasted. High cloud-to-water lightning hazard. Wave Score downgraded below 30 — water sports not recommended.`);
   }
   if (wbgtCelsius >= 32.5) {
     warnings.push(`High Heat Stress (WBGT ${wbgtCelsius}°C): Hydrate regularly and seek shaded rest between sessions.`);
@@ -135,19 +135,19 @@ export function computeBeachSuitability(
     warnings.push(`Choppy Coastal Wind (${windSpeedKmh} km/h ${windCompass}): Elevated swell on exposed shorelines.`);
   }
 
-  // 5. WIDENED WAVE SCORE ALGORITHM TAILORED FOR SWIMMING, KAYAK, FISHING BOAT
-  // Real Singapore coastal physics:
-  // - Sheltered lagoons (Sentosa) excel at swimming and paddleboarding, but poor for motorized boats.
-  // - Deep offshore bays (Southern Islands) excel at fishing boats and yachts, but have strong channel currents.
-  // - Estuarine mangrove flats (Pasir Ris) excel at kayaking, but ground fishing boat props (< 0.8m).
-  // - Shipping channels & commercial piers (West Coast/Marina South) are hazardous/illegal for swimmers (score < 30).
+  // 5. WIDENED WAVE SCORE ALGORITHM TAILORED FOR SWIMMING, JETSKI/KAYAK/SUP, FISHING BOAT
+  // Real Singapore coastal physics + weather override:
+  // When thunderstorms/thundery showers are present, water sports become unsafe, forcing scores below 30 (red).
 
   // A. SWIMMING WAVE SCORE
   let swimmingScore = 80;
   let swimmingAdvice = '';
   if (!beach.swimmingPermitted) {
-    swimmingScore = 24;
+    swimmingScore = 20;
     swimmingAdvice = 'Strictly prohibited: Commercial port channel with heavy ship propeller hazards.';
+  } else if (rainRiskLevel === 'Heavy Thunderstorms') {
+    swimmingScore = Math.min(26, Math.max(18, 28 - (beach.coastalEnvironment === 'open_strait' ? 6 : 2)));
+    swimmingAdvice = 'Hazardous: Active thundery showers. Cloud-to-water lightning risk prohibits swimming.';
   } else if (beach.coastalEnvironment === 'sheltered_lagoon') {
     swimmingScore = 94 - (windSpeedKmh > 18 ? 4 : 0) - rainScorePenalty;
     swimmingAdvice = 'Prime glassy conditions: Wave-break barrier keeps lagoon crystal calm and safe.';
@@ -168,10 +168,13 @@ export function computeBeachSuitability(
   }
   swimmingScore = Math.max(15, Math.min(98, Math.round(swimmingScore)));
 
-  // B. KAYAK & SUP WAVE SCORE
+  // B. JETSKI/KAYAK/SUP WAVE SCORE
   let kayakScore = 78;
   let kayakAdvice = '';
-  if (beach.coastalEnvironment === 'shallow_mangrove_flats') {
+  if (rainRiskLevel === 'Heavy Thunderstorms') {
+    kayakScore = Math.min(25, Math.max(16, 26 - (beach.coastalEnvironment === 'open_strait' ? 6 : 2)));
+    kayakAdvice = 'Hazardous: Thunderstorm squall with high gust risk. Carbon paddles/masts attract lightning.';
+  } else if (beach.coastalEnvironment === 'shallow_mangrove_flats') {
     kayakScore = 93 - (windSpeedKmh > 14 ? 5 : 0) - (rainScorePenalty > 4 ? 4 : 0);
     kayakAdvice = 'Optimal: Glassy flat water and scenic mangrove creeks with zero ocean swell.';
   } else if (beach.coastalEnvironment === 'sheltered_lagoon') {
@@ -189,15 +192,18 @@ export function computeBeachSuitability(
     kayakScore = 66 - (windSpeedKmh > 16 ? 10 : 0) - rainScorePenalty;
     kayakAdvice = 'Favorable inside bay; hazardous crossing main shipping fairway to mainland.';
   } else if (beach.coastalEnvironment === 'shipping_channel' || beach.coastalEnvironment === 'urban_basin') {
-    kayakScore = 38 - rainScorePenalty;
+    kayakScore = 32 - rainScorePenalty;
     kayakAdvice = 'Caution: High vessel wake chop and heavy maritime traffic; launch permit required.';
   }
-  kayakScore = Math.max(20, Math.min(97, Math.round(kayakScore)));
+  kayakScore = Math.max(15, Math.min(97, Math.round(kayakScore)));
 
   // C. FISHING BOAT & CHARTER WAVE SCORE
   let fishingBoatScore = 75;
   let fishingBoatAdvice = '';
-  if (beach.coastalEnvironment === 'deep_offshore_bay') {
+  if (rainRiskLevel === 'Heavy Thunderstorms') {
+    fishingBoatScore = Math.min(28, Math.max(18, 29 - (beach.coastalEnvironment === 'shallow_mangrove_flats' ? 8 : 2)));
+    fishingBoatAdvice = 'Hazardous: Sudden squalls and open water lightning risk. Charters should hold in marina.';
+  } else if (beach.coastalEnvironment === 'deep_offshore_bay') {
     fishingBoatScore = 96 - (windSpeedKmh > 26 ? 10 : 0) - (rainScorePenalty > 5 ? 5 : 0);
     fishingBoatAdvice = 'World-class: Deep 15-30m drop-offs, moving current, and prime pelagic game fishing.';
   } else if (beach.coastalEnvironment === 'shipping_channel') {
@@ -219,11 +225,13 @@ export function computeBeachSuitability(
     fishingBoatScore = 34 - (tideHeightM && tideHeightM < 1.5 ? 12 : 0) - rainScorePenalty;
     fishingBoatAdvice = 'Poor: Shallow estuarine flats; severe propeller grounding risk at low tide (<1.0m).';
   }
-  fishingBoatScore = Math.max(20, Math.min(98, Math.round(fishingBoatScore)));
+  fishingBoatScore = Math.max(18, Math.min(98, Math.round(fishingBoatScore)));
 
   // D. ALL SPORTS COMPOSITE WAVE SCORE
   const allScore = Math.round((swimmingScore + kayakScore + fishingBoatScore) / 3);
-  const allAdvice = `${windSpeedKmh} km/h ${windCompass} breeze · ${tideHeightM ? `${tideHeightM}m tide` : 'Active tides'} · ${rainForecastToday?.forecast || 'Rain radar clear'}`;
+  const allAdvice = rainRiskLevel === 'Heavy Thunderstorms'
+    ? `Thunderstorm Warning: Lightning & squalls in Singapore coastal waters · Wave Score < 30 (Caution)`
+    : `${windSpeedKmh} km/h ${windCompass} breeze · ${tideHeightM ? `${tideHeightM}m tide` : 'Active tides'} · ${rainForecastToday?.forecast || 'Rain radar clear'}`;
 
   // Select active tailored Wave Score based on activeSport parameter
   let waveScore = allScore;
@@ -231,7 +239,7 @@ export function computeBeachSuitability(
   else if (activeSport === 'kayak') waveScore = kayakScore;
   else if (activeSport === 'fishing_boat') waveScore = fishingBoatScore;
 
-  // Grade rating based on active wave score
+  // Grade rating based on active wave score (red below 50 / below 30)
   let rating: 'Prime' | 'Good' | 'Moderate' | 'Caution' = 'Good';
   if (waveScore >= 85) rating = 'Prime';
   else if (waveScore >= 70) rating = 'Good';
@@ -242,10 +250,10 @@ export function computeBeachSuitability(
   const activities: Record<string, ActivitySuitability> = {
     'Swimming': {
       score: swimmingScore,
-      suitability: swimmingScore >= 80 ? 'Optimal' : swimmingScore >= 60 ? 'Favorable' : swimmingScore >= 40 ? 'Challenging' : 'Prohibited',
+      suitability: swimmingScore >= 80 ? 'Optimal' : swimmingScore >= 60 ? 'Favorable' : swimmingScore >= 40 ? 'Challenging' : 'Hazardous',
       advice: swimmingAdvice
     },
-    'Kayaking & SUP': {
+    'Jetski/Kayak/SUP': {
       score: kayakScore,
       suitability: kayakScore >= 80 ? 'Optimal' : kayakScore >= 60 ? 'Favorable' : kayakScore >= 40 ? 'Challenging' : 'Hazardous',
       advice: kayakAdvice

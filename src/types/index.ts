@@ -107,7 +107,7 @@ export interface BeachSpot {
   lat: number;
   lng: number;
   closestWindStationId: string;
-  activities: Array<'Fishing Charter' | 'Jetski & Wake' | 'Yachting & Sailing' | 'Kayaking & SUP' | 'Swimming'>;
+  activities: Array<'Fishing Charter' | 'Jetski & Wake' | 'Yachting & Sailing' | 'Jetski/Kayak/SUP' | 'Swimming'>;
   idealTideLevel: 'high' | 'mid' | 'any';
   highlights: string[];
   partnerIds: string[];

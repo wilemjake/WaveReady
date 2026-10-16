@@ -2,8 +2,8 @@ import React from 'react';
 import { Compass, MapPin, ShieldCheck, Waves } from 'lucide-react';
 
 interface HeaderProps {
-  activeTab: 'map' | 'beaches' | 'partners' | 'membership';
-  setActiveTab: (tab: 'map' | 'beaches' | 'partners' | 'membership') => void;
+  activeTab: 'map' | 'partners' | 'membership';
+  setActiveTab: (tab: 'map' | 'partners' | 'membership') => void;
   onLocateUser: () => void;
   userCoords: { lat: number; lng: number } | null;
   onOpenMembership: () => void;
@@ -45,16 +45,6 @@ export const Header: React.FC<HeaderProps> = ({
             }`}
           >
             Coastal Map
-          </button>
-          <button
-            onClick={() => setActiveTab('beaches')}
-            className={`whitespace-nowrap transition-colors py-1 cursor-pointer ${
-              activeTab === 'beaches'
-                ? 'text-cyan-400 border-b-2 border-cyan-400 font-semibold'
-                : 'hover:text-white'
-            }`}
-          >
-            Beaches & Tides
           </button>
           <button
             onClick={() => setActiveTab('partners')}

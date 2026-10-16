@@ -29,7 +29,7 @@ export const MapComponent: React.FC<MapComponentProps> = ({
     activeSport === 'swimming'
       ? 'Swimming'
       : activeSport === 'kayak'
-      ? 'Kayak'
+      ? 'Jetski/Kayak/SUP'
       : activeSport === 'fishing_boat'
       ? 'Fishing Boat'
       : 'All Water Sports';

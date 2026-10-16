@@ -197,7 +197,7 @@ export const BeachDetailModal: React.FC<BeachDetailModalProps> = ({
                     <div className="bg-slate-950/60 border border-slate-800/80 rounded-2xl p-4 flex flex-col justify-between">
                       <div>
                         <div className="flex items-center justify-between">
-                          <span className="text-xs font-bold text-white">🛶 Kayak & SUP</span>
+                          <span className="text-xs font-bold text-white">🛶 Jetski/Kayak/SUP</span>
                           <span className={`text-base font-extrabold font-mono ${suitability.sportWaveScores.kayak >= 75 ? 'text-emerald-400' : suitability.sportWaveScores.kayak >= 50 ? 'text-amber-400' : 'text-rose-400'}`}>
                             {suitability.sportWaveScores.kayak}
                             <span className="text-[10px] text-slate-500 font-normal">/100</span>

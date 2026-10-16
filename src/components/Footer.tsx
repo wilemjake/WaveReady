@@ -19,7 +19,7 @@ export const Footer: React.FC = () => {
           {/* Sub-goal 6: Required exact data source credit */}
           <div className="text-center md:text-right space-y-1">
             <div className="text-slate-200 font-semibold">
-              Data: NEA, Data.gov.sg, METEO
+              Data: NEA, Data.gov.sg
             </div>
             <div className="text-[11px] text-slate-500">
               Basemap tiles &copy; OneMap &middot; Singapore Land Authority (SLA)
